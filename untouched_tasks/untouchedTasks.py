@@ -17,6 +17,7 @@
 import gio
 import gtk
 import urllib
+import datetime
 
 from GTG import _
 from GTG.tools.logger      import Log
@@ -40,8 +41,12 @@ class pluginUntouchedTasks:
         self.tb_Taskbutton.set_label(_("Untouched Tasks"))
         self.tb_Taskbutton.connect('clicked', self.onTbTaskButton, plugin_api)
         self.tb_Taskbutton.show_all()
-
+	
         plugin_api.add_toolbar_item(self.tb_Taskbutton)
+
+	#NOTE: get_textview() only works in this function
+	# gets initializes textview to use for get_insert()
+	self.textview = plugin_api.get_ui().get_textview()
 
     def deactivate(self, plugin_api):
         """
@@ -63,15 +68,18 @@ class pluginUntouchedTasks:
         Log.debug(task)
         modified_time = task.get_modified()
         Log.debug(modified_time)
-        if task.get_status() == "Active":
-            tags = task.get_tags()
-            Log.debug(tags)
-            plugin_api.insert_tag("test")
-            for tag in task.get_tags():
-                Log.debug(tag)
-                task.insert_tag("test")
-                task.add_tag_attribute(tag_name,
-                                       "location", marker_position)
+	yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+	Log.debug('yesterday')
+	Log.debug(yesterday)
+       
+	if modified_time > yesterday: # set to '>' to show it works but really should be '<' 
+	    itera = self.textview.get_insert()
+            if itera.starts_line():
+                self.textview.insert_text("@untouched",itera)
+            else:
+                self.textview.insert_text(" @untouched",itera)
+            self.textview.grab_focus()
+	
 
 #        numbers = [0,1,2,3,4,5,6,7,8]
 #        for i in numbers:
@@ -80,4 +88,3 @@ class pluginUntouchedTasks:
 #            blah = blahdy.get_modified()
 #            Log.debug('kadwilly')
 #            Log.debug(blah)
-
