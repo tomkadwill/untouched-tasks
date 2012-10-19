@@ -20,7 +20,8 @@ import urllib
 import datetime
 
 from GTG import _
-from GTG.tools.logger      import Log
+from GTG.tools.logger import Log
+from GTG.tools.dates import Date
 
 
 class pluginUntouchedTasks:
@@ -58,6 +59,10 @@ class pluginUntouchedTasks:
         except:
             pass
 
+## HELPER FUNCTIONS ###########################################################
+    def __log(self, message):
+        Log.debug(message)
+
 ## CORE FUNCTIONS #############################################################
     def onTbTaskButton(self, widget, plugin_api):
         """
@@ -71,7 +76,8 @@ class pluginUntouchedTasks:
 	yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
 	Log.debug('yesterday')
 	Log.debug(yesterday)
-       
+      
+	self.delete_old_closed_tasks() #for testing delete_old_closed_tasks
 	if modified_time > yesterday: # set to '>' to show it works but really should be '<' 
 	    itera = self.textview.get_insert()
             if itera.starts_line():
@@ -79,12 +85,32 @@ class pluginUntouchedTasks:
             else:
                 self.textview.insert_text(" @untouched",itera)
             self.textview.grab_focus()
-	
 
-#        numbers = [0,1,2,3,4,5,6,7,8]
-#        for i in numbers:
-#            i = str(i) + '@1'
-#            blahdy = self.__req.get_task(i)
-#            blah = blahdy.get_modified()
-#            Log.debug('kadwilly')
-#            Log.debug(blah)
+
+	###BEFORE YOU DO THIS###
+	#Get the current onTBTaskButton working
+	#When you click button it should get all tasks and add @untouched
+	#Then progress to adding @untouched if older than x days
+    def delete_old_closed_tasks(self, widget = None):
+        self.__log("Starting deletion of old tasks")
+        today = Date.today()
+        max_days = 30
+        requester = self.plugin_api.get_requester()
+        closed_tree = requester.get_tasks_tree(name = 'inactive')
+        closed_tasks = [requester.get_task(tid) for tid in \
+                        closed_tree.get_all_nodes()]
+	for task in closed_tasks:
+	    modified_time = task.get_modified()
+	    self.__log(modified_time)
+	    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+	    Log.debug('yesterday')
+	    Log.debug(yesterday)
+      
+	    if modified_time > yesterday: # set to '>' to show it works but really should be '<' 
+	    	itera = self.textview.get_insert()
+            if itera.starts_line():
+                self.textview.insert_text("@untouched",itera)
+            else:
+                self.textview.insert_text(" @untouched",itera)
+            self.textview.grab_focus()
+
