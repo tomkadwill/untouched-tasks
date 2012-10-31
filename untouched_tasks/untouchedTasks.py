@@ -133,15 +133,27 @@ class pluginUntouchedTasks:
         Log.debug(message)
 
 ## CORE FUNCTIONS #############################################################
+    def schedule_autopurge(self):
+        self.timer = Timer(self.TIME_BETWEEN_PURGES,
+                                self.delete_old_closed_tasks2)
+        self.timer.setDaemon(True)
+        self.timer.start()
+        self.__log("Automatic deletion of old tasks scheduled")
+
+    def cancel_autopurge(self):
+        if self.timer:
+            self.__log("Automatic deletion of old tasks cancelled")
+            self.timer.cancel()
+
     #def onTbTaskButton(self, widget, plugin_api):
-    def delete_old_closed_tasks2(self, widget):
+    def delete_old_closed_tasks2(self, widget = None):
         """
         When the user presses the button.
         """
         #task = self.plugin_api.get_ui().get_task()
         #Log.debug(task)
       
-        self.__log("Starting deletion of old tasks")
+        self.__log("Starting deletion of old tasks1")
         today = Date.today()
         max_days = 30
         requester = self.plugin_api.get_requester()
@@ -246,7 +258,7 @@ class pluginUntouchedTasks:
                             self.is_automatic == False:
             self.is_automatic = True
             # Run the first iteration immediately and schedule next iteration
-            self.delete_old_closed_tasks()
+            self.delete_old_closed_tasks2()
         elif self.preferences['is_automatic'] == False and \
                             self.is_automatic == True:
             self.cancel_autopurge()
