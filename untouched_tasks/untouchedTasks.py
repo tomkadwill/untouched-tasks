@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+import os
 import gio
 import gtk
 import urllib
@@ -22,11 +24,8 @@ import datetime
 from GTG import _
 from GTG.tools.logger import Log
 from GTG.tools.dates import Date
-
-###############################
-
-import sys
-import os
+from threading import Timer
+from datetime import date, timedelta
 
 try:
     import pygtk
@@ -39,14 +38,7 @@ try:
 except: # pylint: disable-msg=W0702
     sys.exit(1)
 
-from threading import Timer
-
-from GTG.tools.logger import Log
-from GTG.tools.dates import Date
-
-##############################
-#test all of these and the ones above
-##############################
+###################################
 
 
 class pluginUntouchedTasks:
@@ -115,6 +107,7 @@ class pluginUntouchedTasks:
     def schedule_autopurge(self):
         self.timer = Timer(self.TIME_BETWEEN_PURGES,
                                 self.delete_old_closed_tasks2)
+	self.__log(self.TIME_BETWEEN_PURGES)
         self.timer.setDaemon(True)
         self.timer.start()
         self.__log("Automatic deletion of old tasks scheduled")
@@ -130,41 +123,29 @@ class pluginUntouchedTasks:
         When the user presses the button.
         """
         self.__log("Starting deletion of old tasks1")
-        today = Date.today()
-        max_days = 30
-        requester = self.plugin_api.get_requester()
+	today = datetime.datetime.now()
+        max_days = self.preferences["max_days"]
+	max_days_date = datetime.datetime.now() + datetime.timedelta(days=max_days)
+	requester = self.plugin_api.get_requester()
         closed_tree = requester.get_tasks_tree(name = 'inactive')
         closed_tasks = [requester.get_task(tid) for tid in \
                         closed_tree.get_all_nodes()]
 	for task in closed_tasks:
 	    modified_time = task.get_modified()
-	    self.__log(modified_time)
-	    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-	    Log.debug('yesterday')
-	    Log.debug(yesterday)
-      
-	    if modified_time > yesterday: # set to '>' to show it works but really should be '<' 
+	    new_modified_time = modified_time + datetime.timedelta(days=max_days)
+	    self.__log('new_modified_time')
+	    self.__log(new_modified_time) 
+	    #self.__log('modified_time')
+	    #self.__log(modified_time)
+	    self.__log('today')
+	    self.__log(today)
+	    if new_modified_time < today: # set to '>' to show it works but really should be '<' 
 		self.__log('adding @untouched to:')
 		self.__log(task)
 		task.add_tag('@untouched')
 
-    def delete_old_closed_tasks(self, widget = None):
-        self.__log("Starting deletion of old tasks")
-        today = Date.today()
-        max_days = self.preferences["max_days"]
-        requester = self.plugin_api.get_requester()
-        closed_tree = requester.get_tasks_tree(name = 'inactive')
-        closed_tasks = [requester.get_task(tid) for tid in \
-                        closed_tree.get_all_nodes()]
-        to_remove = [t for t in closed_tasks
-                        if (today - t.get_closed_date()).days > max_days]
-
-        for task in to_remove:
-            if requester.has_task(task.get_id()):
-                requester.delete_task(task.get_id())
-
-        #If automatic purging is on, schedule another run
-        if self.is_automatic:
+	#If automatic purging is on, schedule another run
+	if self.is_automatic:
             self.schedule_autopurge()
 
 
