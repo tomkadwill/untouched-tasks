@@ -76,7 +76,7 @@ class pluginUntouchedTasks:
                 self.on_preferences_ok,
         }
         self.builder.connect_signals(SIGNAL_CONNECTIONS_DIC)
-        self.menu_item = gtk.MenuItem("Delete old closed tasks")
+        self.menu_item = gtk.MenuItem("Add @untouched tag")
         self.menu_item.connect('activate', self.delete_old_closed_tasks2)
 
     def activate(self, plugin_api):

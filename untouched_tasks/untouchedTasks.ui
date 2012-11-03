@@ -60,7 +60,7 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="pref_chbox_is_automatic">
-                <property name="label" translatable="yes">Delete tasks automatically</property>
+                <property name="label" translatable="yes">Add @untouched tag to old tasks automatically</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -73,7 +73,7 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="pref_chbox_show_menu_item">
-                <property name="label" translatable="yes">Add the "Plugins &gt; Delete old tasks" menu item</property>
+                <property name="label" translatable="yes">Add the "Plugins &gt; Add @untouched plugin" menu item</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
