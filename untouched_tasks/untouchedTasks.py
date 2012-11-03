@@ -67,7 +67,7 @@ class pluginUntouchedTasks:
         self.builder = gtk.Builder()
         self.builder.add_from_file(os.path.join(
                              os.path.dirname(os.path.abspath(__file__)) + \
-                             "/reaper.ui"))
+                             "/untouchedTasks.ui"))
         self.preferences_dialog = self.builder.get_object("preferences_dialog")
         self.pref_chbox_show_menu_item = \
                         self.builder.get_object("pref_chbox_show_menu_item")
@@ -95,28 +95,7 @@ class pluginUntouchedTasks:
         self.timer = None
         self.preferences_load()
         self.preferences_apply()
-        self.__log('tom reaper here?')
         requester = self.plugin_api.get_requester()
-
-    #def onTaskOpened(self, plugin_api):
-    #    """
-    #    Adds the button when a task is opened.
-    #    """
-    #    self.plugin_api = plugin_api
-    #    # add a item (button) to the ToolBar
-    #    tb_Taskicon = gtk.Image()
-    #    tb_Taskicon.set_from_icon_name('mail-send', 32)
-
-    #    self.tb_Taskbutton = gtk.ToolButton(tb_Taskicon)
-    #    self.tb_Taskbutton.set_label(_("Untouched Tasks"))
-    #    self.tb_Taskbutton.connect('clicked', self.onTbTaskButton, plugin_api)
-    #    self.tb_Taskbutton.show_all()
-	
-    #    plugin_api.add_toolbar_item(self.tb_Taskbutton)
-
-    #	#NOTE: get_textview() only works in this function
-    #	# gets initializes textview to use for get_insert()
-    #	self.textview = plugin_api.get_ui().get_textview()
 
     def deactivate(self, plugin_api):
         """
@@ -150,9 +129,6 @@ class pluginUntouchedTasks:
         """
         When the user presses the button.
         """
-        #task = self.plugin_api.get_ui().get_task()
-        #Log.debug(task)
-      
         self.__log("Starting deletion of old tasks1")
         today = Date.today()
         max_days = 30
@@ -171,14 +147,6 @@ class pluginUntouchedTasks:
 		self.__log('adding @untouched to:')
 		self.__log(task)
 		task.add_tag('@untouched')
-
-	#if modified_time > yesterday: # set to '>' to show it works but really should be '<' 
-	#    itera = self.textview.get_insert()
-        #    if itera.starts_line():
-        #        self.textview.insert_text("@untouched",itera)
-        #    else:
-        #        self.textview.insert_text(" @untouched",itera)
-        #    self.textview.grab_focus()
 
     def delete_old_closed_tasks(self, widget = None):
         self.__log("Starting deletion of old tasks")
