@@ -49,7 +49,7 @@ class pluginUntouchedTasks:
 
     PLUGIN_NAME = "untouched-tasks"
 
-    #In case of automatic removing tasks, the time
+    # In case of automatic removing tasks, the time
     # between two runs of the cleaner function
     TIME_BETWEEN_PURGES = 60 * 60
 
@@ -107,14 +107,13 @@ class pluginUntouchedTasks:
     def schedule_autopurge(self):
         self.timer = Timer(self.TIME_BETWEEN_PURGES,
                                 self.delete_old_closed_tasks2)
-	self.__log(self.TIME_BETWEEN_PURGES)
         self.timer.setDaemon(True)
         self.timer.start()
-        self.__log("Automatic deletion of old tasks scheduled")
+        self.__log("Automatic untouched tasks check scheduled")
 
     def cancel_autopurge(self):
         if self.timer:
-            self.__log("Automatic deletion of old tasks cancelled")
+            self.__log("Automatic untouched tasks check cancelled")
             self.timer.cancel()
 
     #def onTbTaskButton(self, widget, plugin_api):
@@ -122,10 +121,9 @@ class pluginUntouchedTasks:
         """
         When the user presses the button.
         """
-        self.__log("Starting deletion of old tasks1")
+        self.__log("Starting process for adding @untouched tag")
 	today = datetime.datetime.now()
         max_days = self.preferences["max_days"]
-	max_days_date = datetime.datetime.now() + datetime.timedelta(days=max_days)
 	requester = self.plugin_api.get_requester()
         closed_tree = requester.get_tasks_tree(name = 'inactive')
         closed_tasks = [requester.get_task(tid) for tid in \
@@ -133,15 +131,8 @@ class pluginUntouchedTasks:
 	for task in closed_tasks:
 	    modified_time = task.get_modified()
 	    new_modified_time = modified_time + datetime.timedelta(days=max_days)
-	    self.__log('new_modified_time')
-	    self.__log(new_modified_time) 
-	    #self.__log('modified_time')
-	    #self.__log(modified_time)
-	    self.__log('today')
-	    self.__log(today)
-	    if new_modified_time < today: # set to '>' to show it works but really should be '<' 
-		self.__log('adding @untouched to:')
-		self.__log(task)
+	    if new_modified_time < today: 
+		self.__log('Adding @untouched tag to: "' + task.title + '" as last time it was modified was ' + str(modified_time))
 		task.add_tag('@untouched')
 
 	#If automatic purging is on, schedule another run
