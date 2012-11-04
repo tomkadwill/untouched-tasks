@@ -77,7 +77,7 @@ class pluginUntouchedTasks:
         }
         self.builder.connect_signals(SIGNAL_CONNECTIONS_DIC)
         self.menu_item = gtk.MenuItem("Add @untouched tag")
-        self.menu_item.connect('activate', self.delete_old_closed_tasks2)
+        self.menu_item.connect('activate', self.add_untouched_tag)
 
     def activate(self, plugin_api):
         self.plugin_api = plugin_api
@@ -106,7 +106,7 @@ class pluginUntouchedTasks:
 ## CORE FUNCTIONS #############################################################
     def schedule_autopurge(self):
         self.timer = Timer(self.TIME_BETWEEN_PURGES,
-                                self.delete_old_closed_tasks2)
+                                self.add_untouched_tag)
         self.timer.setDaemon(True)
         self.timer.start()
         self.__log("Automatic untouched tasks check scheduled")
@@ -116,8 +116,7 @@ class pluginUntouchedTasks:
             self.__log("Automatic untouched tasks check cancelled")
             self.timer.cancel()
 
-    #def onTbTaskButton(self, widget, plugin_api):
-    def delete_old_closed_tasks2(self, widget = None):
+    def add_untouched_tag(self, widget = None):
         """
         When the user presses the button.
         """
@@ -138,7 +137,6 @@ class pluginUntouchedTasks:
 	#If automatic purging is on, schedule another run
 	if self.is_automatic:
             self.schedule_autopurge()
-
 
 ## Preferences methods ########################################################
     def is_configurable(self):
@@ -198,7 +196,7 @@ class pluginUntouchedTasks:
                             self.is_automatic == False:
             self.is_automatic = True
             # Run the first iteration immediately and schedule next iteration
-            self.delete_old_closed_tasks2()
+            self.add_untouched_tag()
         elif self.preferences['is_automatic'] == False and \
                             self.is_automatic == True:
             self.cancel_autopurge()
