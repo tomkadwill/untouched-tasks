@@ -44,7 +44,6 @@ class pluginUntouchedTasks:
 
     DEFAULT_PREFERENCES = {'max_days': 30,
                            'is_automatic': False,
-			   'show_menu_item': True, #required? 
 			   'default_tag': '@untouched'}
 
     PLUGIN_NAME = "untouched-tasks"
@@ -61,8 +60,6 @@ class pluginUntouchedTasks:
                              os.path.dirname(os.path.abspath(__file__)) + \
                              "/untouchedTasks.ui"))
         self.preferences_dialog = self.builder.get_object("preferences_dialog")
-        #self.pref_chbox_show_menu_item = \
-        #                self.builder.get_object("pref_chbox_show_menu_item")
         self.pref_chbox_is_automatic = \
                         self.builder.get_object("pref_chbox_is_automatic")
         self.pref_spinbtn_max_days = \
@@ -84,13 +81,13 @@ class pluginUntouchedTasks:
     def activate(self, plugin_api):
         self.plugin_api = plugin_api
         #preferences initialization
-        self.menu_item_is_shown = True
         self.is_automatic = False
         self.timer = None
-	#self.default_tag = '@untouched'
         self.preferences_load()
         self.preferences_apply()
         requester = self.plugin_api.get_requester()
+	#add menu item
+	self.plugin_api.add_menu_item(self.menu_item)
 
     def deactivate(self, plugin_api):
         """
@@ -120,12 +117,15 @@ class pluginUntouchedTasks:
             self.timer.cancel()
 
     def add_untouched_tag(self, widget = None):
-        """
-        When the user presses the button.
-        """
+	#If no tag is picked up from preferences
 	tag_name = self.pref_tag_name.get_text()
+	if not tag_name:
+	    tag_name = self.preferences['default_tag']
+	
+	#Add @ if user has not entered it
 	if tag_name.find('@') != 0:
 	    tag_name = '@' + tag_name
+
         self.__log("Starting process for adding " + tag_name)
         today = datetime.datetime.now()
         max_days = self.preferences["max_days"]
@@ -133,14 +133,12 @@ class pluginUntouchedTasks:
         closed_tree = requester.get_tasks_tree(name = 'inactive')
         closed_tasks = [requester.get_task(tid) for tid in \
                         closed_tree.get_all_nodes()]
+
+	#Add untouched tag to all tasks where new_date < time now
         for task in closed_tasks:
             modified_time = task.get_modified()
-	    #self.__log('modified_time')
-	    #self.__log(modified_time)
-	    #self.__log('today')
-	    #self.__log(today)
             new_time = modified_time + datetime.timedelta(days=max_days)
-            if new_time > today: #Changed to test
+            if new_time < today:
                 self.__log('Adding ' + tag_name + ' tag to: "' + task.title +
                 '" as last time it was modified was ' + str(modified_time))
                 task.add_tag(tag_name)
@@ -156,14 +154,9 @@ class pluginUntouchedTasks:
 
     def configure_dialog(self, manager_dialog):
         self.preferences_load()
-	self.__log('is it below here..')
-	self.__log(self.preferences)
-	self.__log('and below here?')
         self.preferences_dialog.set_transient_for(manager_dialog)
         self.pref_chbox_is_automatic.set_active(
                         self.preferences["is_automatic"])
-        #self.pref_chbox_show_menu_item.set_active(
-        #                self.preferences["show_menu_item"])
         self.pref_spinbtn_max_days.set_value(
                         self.preferences["max_days"])
 	self.pref_tag_name.set_text( 
@@ -177,35 +170,27 @@ class pluginUntouchedTasks:
     def on_preferences_ok(self, widget = None, data = None):
         self.preferences["is_automatic"] = \
                 self.pref_chbox_is_automatic.get_active()
-        #self.preferences["show_menu_item"] = \
-        #        self.pref_chbox_show_menu_item.get_active()
         self.preferences["max_days"] = \
                 self.pref_spinbtn_max_days.get_value()
-        self.preferences_apply()
+        self.preferences['default_tag'] = \
+		self.pref_tag_name.get_text()
+	self.preferences_apply()
         self.preferences_store()
         self.preferences_dialog.hide()
 
     def preferences_load(self):
         data = self.plugin_api.load_configuration_object(self.PLUGIN_NAME,
                                                          "preferences")
-	self.__log('data')
-	self.__log(data)
-	self.__log('end data')
         if data == None or type(data) != type(dict()):
             self.preferences = self.DEFAULT_PREFERENCES
         else:
             self.preferences = data
 
     def preferences_store(self):
-	self.__log('preferences_store')
-	self.__log(self.preferences)
         self.plugin_api.save_configuration_object(self.PLUGIN_NAME,
                                       "preferences", self.preferences)
 
     def preferences_apply(self):
-        #Showing the GUI
-        self.menu_item_is_shown = True #is this required?
-	self.plugin_api.add_menu_item(self.menu_item)
         #Auto-purge
         if self.preferences['is_automatic'] == True and \
                             self.is_automatic == False:
