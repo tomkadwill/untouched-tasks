@@ -35,7 +35,7 @@
                     <property name="can_focus">True</property>
                     <property name="invisible_char">&#x25CF;</property>
 		    <property name="width_chars">15</property>
-		    <property name="text" translatable="yes">@untouched</property>
+		    <!--<property name="text" translatable="yes">@untouched</property>-->
                   </object>
                   <packing>
                     <property name="position">1</property>
